@@ -1,67 +1,179 @@
 # Clever's Backend Engineering Challenge
-👋 Hello!, Hola!, Witam!
 
-Thank you for taking the time to interview with Clever. This coding challenge is designed to see how you approach backend architecture, API design, and engineering best practices. We don't want this to take too much of your time (and if it does, certainly let us know!).
+## Tools use
+- Docker
+- Django
+- Postgresql as default database
 
-## Overview
-Build a RESTful API for a photo management service using the provided photo dataset. This API should be production-ready, well-documented, and demonstrate your understanding of backend architecture, API design, and software engineering best practices.
+## API design
+There are two main apps in this project
+account and photo.
 
-## Core Requirements
-The baseline functionality we expect:
-- Ingest and store the provided photo data (photos.csv)
-- Implement user authentication and authorization
-- Provide API endpoints for managing and accessing photos
-- Include comprehensive API documentation
-- Write tests for your implementation
+## Commands
+This project use docker. therefore it is required to have that install. then execute the following commands
 
-## What We Want to See
-This is intentionally open-ended. We want to see what **you** think makes a great, production-ready API. Consider implementing features and patterns you'd expect in a real-world system. Choose what you think is most important and implement thoughtfully. Quality over quantity.
+```
+docker compose up
+```
 
-## Technology Choices
-- **Backend Framework**: We primarily use Django and Ruby on Rails, but you're welcome to use whatever language and framework you're most proficient in (Python, Ruby, Node.js, Go, Java, etc.)
-- **Database**: Your choice - pick what makes sense for the use case
-- **Documentation**: Choose the format that best communicates your API design
-- **Additional Tools**: Use whatever tools and libraries you believe are appropriate
+in a different terminal execute the following commands
+```
+docker exec -it clever-assignment-app /bin/bash
 
-## Data Source
-We've provided `photos.csv` with photo data from Pexels. Each row represents a photo with details like dimensions, photographer information, various image sizes, and descriptions. Use this as your data source.
+python manage.py migrate
+```
 
-## Deliverables
-Your submission should include:
+### Models
+- Photographer: is a photographer instance, it has an external id and name. It represent the photographer.
+- Photo: It represent the photo that want to be upload. It is importnat to notify that the original photo required a URL, and some unique paramater different to photo variants
+- PhotoVariant: It is possible that a photo has multiple variants, in this case the sizes is the mean attribute.
 
-1. **Working API** with clear setup instructions
-2. **API Documentation** explaining available endpoints and how to use them
-3. **Tests** demonstrating your testing approach
-4. **README** that explains:
-   - Architecture decisions and trade-offs you made
-   - What features you implemented and why you prioritized them
-   - How to run the application and tests
-   - What you would add/change with more time
-   - Any assumptions you made
+### URL
 
-## Evaluation Criteria
-We'll be assessing:
-- **API Design**: RESTful principles, resource modeling, endpoint design, consistency
-- **Code Quality**: Organization, patterns, maintainability, readability
-- **Database Design**: Schema design, relationships, indexing strategy
-- **Security**: Authentication implementation, authorization, input validation
-- **Error Handling**: Meaningful error messages, proper HTTP status codes, edge cases
-- **Testing**: Test coverage, test quality, testing strategy
-- **Documentation**: API docs, code documentation, setup instructions, decision rationale
+#### Create an account
+URL: */auth/signup*
 
-## Time Expectation
-We expect this to take **2-6 hours** of focused work. If you find yourself spending significantly more time, please document what you would do next rather than trying to complete everything. We value your time and want to see how you prioritize.
+METHOD: *POST*
 
-## Submission
-- Fork this repo and commit your code there
-- Open a PR from your fork back to the main repo
-- Add the following users as reviewers so we can assess your work:
-  - James Crain (@imjamescrain)
-  - Jimmy Lien (@jlien)
-  - Nick Clucas (@nickcluc)
-  - Ryan McCue (@rymccue)
+Body
+```
+{
+  "username": "new_user_name",
+  "email": "new_user_email",
+  "password": "password_of_new_user"
+}
+```
+---
+#### Logn in
+URL: */auth/login*
 
-## Final Thoughts
-This challenge is designed to be open-ended because we want to understand how you think about building systems, not just whether you can follow a specification. Show us your engineering judgment, your decision-making process, and what you believe "done" really means.
+METHOD: *POST*
 
-**Any questions?** Send emails to <a href="mailto:ryan@movewithclever.com">ryan@movewithclever.com</a>. Good luck!
+Body
+```
+{
+  "username" : username create,
+  "password" : password
+}
+```
+---
+#### Upload all the photos
+URL: */photos/upload-data*
+
+METHOD: *POST*
+
+HEADERS: "Authorization": "Token {Token}
+
+Body
+ensure you using multipart form
+```
+  {
+    "file": file
+  }
+```
+---
+#### Get all Photos
+URL: */photos/photos*
+
+METHOD: *GET*
+
+HEADERS: "Authorization": "Token {Token}
+
+Body
+```
+[
+  {
+    "id": "photo id",
+    "photographer" : {
+      "id": int,
+      "external_id": int,
+      "name": string,
+      "url": string,
+    },
+    "photos_variants": [
+      {
+        "id": int,
+        "variant_name": string,
+        "url": string
+      }
+      ...
+    ],
+    "external_id": int,
+    "width": int,
+    "height": int,
+    "url": string,
+    "avg_color": string,
+    "alt": string
+  }
+]
+```
+---
+#### Photogher
+URLs: */photos/photographer*,*/photos/photographer/{id}* 
+
+METHOD: *GET/POST/PATCH*
+
+HEADERS: "Authorization": "Token {Token}
+
+Body
+required to specify an photographer to create or update
+```
+{
+  "external_id" : int,
+  "name" : string,
+  "url": string
+}
+```
+---
+#### Photos 
+URLs: */photos/photos*,*/photos/photos/{id}* 
+
+METHOD: *GET/POST/PATCH*
+
+HEADERS: "Authorization": "Token {Token}
+
+Body
+required to specify an photographer to create a photo.
+variants is optional and need to pass here to create a new one
+```
+{
+  "id": "photo id",
+  "photographer" : {
+    "id": int,
+    "external_id": int,
+    "name": string,
+    "url": string,
+  },
+  "photos_variants": [
+    {
+      "id": int,
+      "variant_name": string,
+      "url": string
+    }
+    ...
+  ],
+  "external_id": int,
+  "width": int,
+  "height": int,
+  "url": string,
+  "avg_color": string,
+  "alt": string
+}
+```
+---
+#### Photos Variants
+URLs: */photos/photos-variants*,*/photos/photos-variants/{id}* 
+
+METHOD: *GET/POST/PATCH*
+
+HEADERS: "Authorization": "Token {Token}
+
+Body
+```
+{
+  "id": int,
+  "variant_name": string,
+  "url": string
+}
+```
+---

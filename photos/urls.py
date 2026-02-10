@@ -7,7 +7,7 @@ app_name = 'photos'
 
 router =  DefaultRouter()
 router.register(r"photos", views.PhotoReadOnlyViewSet, basename="photos")
-router.register(r"photosgraphers", views.PhotographerReadOnlyViewSet, basename="photosgraphers")
+router.register(r"photographer", views.PhotographerReadOnlyViewSet, basename="photosgraphers")
 router.register(r"photos-variants", views.PhotoVariantReadOnlyViewSet, basename="photos-variants")
 
 urlpatterns = [
